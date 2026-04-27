@@ -6,32 +6,42 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip git zip unzip openjdk-17-jdk
+          sudo apt install -y python3-pip git zip unzip openjdk-17-jdk build-essential
 
-      - name: Install Buildozer
-        run: pip install buildozer
+      - name: Upgrade pip
+        run: python3 -m pip install --upgrade pip
+
+      - name: Install Buildozer and Cython
+        run: |
+          pip install buildozer cython
 
       - name: Init Buildozer
         run: |
           buildozer init
-          sed -i 's/title = .*/title = May Day App/' buildozer.spec
-          sed -i 's/package.name = .*/package.name = maydayapp/' buildozer.spec
+
+          sed -i 's/title = .*/title = First May/' buildozer.spec
+          sed -i 's/package.name = .*/package.name = firstmay/' buildozer.spec
           sed -i 's/package.domain = .*/package.domain = org.test/' buildozer.spec
+
           sed -i 's/requirements = .*/requirements = python3,pygame/' buildozer.spec
 
+          sed -i 's/# (str) Orientation/screen.orientation = portrait/' buildozer.spec
+
       - name: Build APK
-        run: buildozer android debug
+        run: |
+          buildozer -v android debug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: apk
           path: bin/*.apk
